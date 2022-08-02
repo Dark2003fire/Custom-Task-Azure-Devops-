@@ -1,0 +1,120 @@
+#File : simple-param.yml
+parameters:
+    - name: yesNO # name of the parameter ; required
+      type :boolean #datatype of the parameter;required
+      default: false
+
+
+steps:
+    - script : echo ${{parameter.yesNo}}
+
+
+#File : azure-pipelines.yml
+trigger :
+    - main
+
+extends :
+    template : simple-param.yml
+    parameters :
+        yesNo: false # set to a non-boolean value to have build fail
+
+
+
+#parameters to select a template at a runtime
+#In this example we will use experimenta.yml
+
+#azure-pipelines.yml
+paramters:
+    - name : experimentalTemplate
+      displayName : 'Use experimental build process?'
+      type : boolean
+      default : false
+
+steps :
+    - ${{if eq(parameters.experimentalTemplate , True)}}:
+        - template:experimenta.yml
+    - ${{if not(eq(parameters.experimentalTemplate , True))}}:
+        - template : stable.yml
+
+
+
+
+#All standard datatypes used in YAML schema format
+parameters:
+    - name : myString
+      type : myString
+      default: a string
+    - name : myMultistring
+      type : string
+      default: default
+      values:
+      - default
+      - ubuntu
+    - name : myNumber
+      type : myNumber
+      default: 2
+      values:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+    - name : myBoolean
+      type : boolean
+      default: true
+    - name : myObject
+      type : myObject
+      default:
+      foo : FOO
+      bar : BAR
+      things:
+        - one
+        - two
+        - three
+        nested :
+        one : Hitesh
+        two : Raji
+        three: Asjad
+        four : Arisha
+        count : 3
+    - name : myStep
+      type:step
+      default :
+        script: echo my step
+    - name : mySteplist
+      type : mySteplist
+      default :
+        - script : echo step one
+        - script : echo step two
+
+
+trigger: none
+
+jobs:
+   - job: stepList
+     steps : ${{parameters.mySteplist}}
+   - job: myStep
+     steps:
+       - ${{paramters.myStep}}
+# We can iterate through an object and print each string in the object
+parameters:
+    - name : listOfStrings
+      type : object
+      default:
+      - one
+      - two
+    steps:
+        - ${{each value in paramters.listOfStrings}}:
+          - script :  echo ${{value}}
+         # - script : echo ${{if eq(parameters.mySteplist)}} :
+
+
+
+
+
+
+
+
+
+
+
